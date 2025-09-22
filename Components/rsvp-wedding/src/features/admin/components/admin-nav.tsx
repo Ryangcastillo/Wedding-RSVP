@@ -38,6 +38,12 @@ export function AdminNav({ activeSection, onSectionChange, className }: AdminNav
       description: 'Guest Management'
     },
     {
+      id: 'content',
+      label: 'Content',
+      icon: '📄',
+      description: 'Website Content'
+    },
+    {
       id: 'settings',
       label: 'Settings',
       icon: '⚙️',

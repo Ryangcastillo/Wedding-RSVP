@@ -81,7 +81,7 @@ export function AdminDashboardOverview({ rsvps, className }: AdminDashboardOverv
             <div>
               <h2 className="text-2xl font-bold text-primary mb-2">Welcome to Your Wedding Dashboard</h2>
               <p className="text-muted-foreground">
-                Here's what's happening with your wedding RSVPs today.
+                Here&apos;s what&apos;s happening with your wedding RSVPs today.
               </p>
             </div>
             <div className="text-6xl">💒</div>
