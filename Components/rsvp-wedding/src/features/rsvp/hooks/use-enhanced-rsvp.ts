@@ -10,10 +10,9 @@ import {
   enhancedRSVPService, 
   ServiceRSVP, 
   RSVPStats, 
-  RSVPAnalytics,
-  CreateRSVPRequest,
-  UpdateRSVPRequest 
+  RSVPAnalytics
 } from '../services/enhanced-rsvp-service';
+import { RSVPFormData } from '@/shared/types/rsvp';
 
 export interface EnhancedRSVPState {
   rsvps: ServiceRSVP[];
@@ -72,17 +71,21 @@ export function useEnhancedRSVP() {
     try {
       updateState({ loading: true, error: null });
 
-      const result = await enhancedRSVPService.getAll({
-        page: filters.page || 1,
-        limit: filters.limit || 50,
-        search: filters.search,
-        sortBy: filters.sortBy,
-        sortOrder: filters.sortOrder,
-        attendance: filters.attendance,
-      });
+      // Filter out undefined values and convert numbers to strings for filters
+      const filters_clean: Record<string, string> = {};
+      if (filters.search) filters_clean.search = filters.search;
+      if (filters.sortBy) filters_clean.sortBy = filters.sortBy;
+      if (filters.sortOrder) filters_clean.sortOrder = filters.sortOrder;
+      if (filters.attendance) filters_clean.attendance = filters.attendance;
+
+      const result = await enhancedRSVPService.getPaginated(
+        filters.page || 1,
+        filters.limit || 50,
+        filters_clean
+      );
 
       updateState({
-        rsvps: result.rsvps,
+        rsvps: result.items,
         totalCount: result.total,
         currentPage: result.page,
         totalPages: result.totalPages,
@@ -94,7 +97,7 @@ export function useEnhancedRSVP() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load RSVPs';
       setError(errorMessage);
-      return { rsvps: [], total: 0, page: 1, totalPages: 0 };
+      return { items: [], total: 0, page: 1, totalPages: 0 };
     }
   }, [updateState, setError]);
 
@@ -116,9 +119,9 @@ export function useEnhancedRSVP() {
   /**
    * Load RSVP analytics
    */
-  const loadAnalytics = useCallback(async (period: '7d' | '30d' | '90d' | '1y' = '30d') => {
+  const loadAnalytics = useCallback(async () => {
     try {
-      const analytics = await enhancedRSVPService.getAnalytics(period);
+      const analytics = await enhancedRSVPService.getAnalytics();
       updateState({ analytics, error: null });
       return analytics;
     } catch (error) {
@@ -131,11 +134,11 @@ export function useEnhancedRSVP() {
   /**
    * Create new RSVP
    */
-  const createRSVP = useCallback(async (data: CreateRSVPRequest): Promise<ServiceRSVP | null> => {
+  const createRSVP = useCallback(async (data: RSVPFormData): Promise<ServiceRSVP | null> => {
     try {
       updateState({ loading: true, error: null });
 
-      const newRSVP = await enhancedRSVPService.create(data);
+      const newRSVP = await enhancedRSVPService.createRSVP(data);
 
       // Add to local state
       setState(prev => ({
@@ -160,11 +163,11 @@ export function useEnhancedRSVP() {
   /**
    * Update existing RSVP
    */
-  const updateRSVP = useCallback(async (id: string, updates: UpdateRSVPRequest): Promise<ServiceRSVP | null> => {
+  const updateRSVP = useCallback(async (id: string, updates: Partial<RSVPFormData>): Promise<ServiceRSVP | null> => {
     try {
       updateState({ loading: true, error: null });
 
-      const updatedRSVP = await enhancedRSVPService.update(id, updates);
+      const updatedRSVP = await enhancedRSVPService.updateRSVP(id, updates);
 
       // Update in local state
       setState(prev => ({
@@ -237,16 +240,21 @@ export function useEnhancedRSVP() {
     try {
       updateState({ loading: true, error: null });
 
-      const result = await enhancedRSVPService.search(query, options);
+      // Convert numbers to strings for the search filters
+      const searchFilters: Record<string, string> = {};
+      if (options.limit !== undefined) searchFilters.limit = options.limit.toString();
+      if (options.offset !== undefined) searchFilters.offset = options.offset.toString();
+
+      const result = await enhancedRSVPService.search(query, searchFilters);
 
       updateState({
-        rsvps: result.items,
-        totalCount: result.total,
+        rsvps: result,
+        totalCount: result.length,
         loading: false,
         error: null
       });
 
-      return result;
+      return { items: result, total: result.length };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to search RSVPs';
       setError(errorMessage);
@@ -299,14 +307,15 @@ export function useEnhancedRSVP() {
       const updatedRSVPs = await enhancedRSVPService.bulkUpdateAttendance(updates);
 
       // Update local state
-      updateState({
-        rsvps: prev => prev.rsvps.map(rsvp => {
+      setState(prev => ({
+        ...prev,
+        rsvps: prev.rsvps.map(rsvp => {
           const updated = updatedRSVPs.find(u => u.id === rsvp.id);
           return updated || rsvp;
         }),
         loading: false,
         error: null
-      });
+      }));
 
       // Reload stats
       loadStats();
@@ -363,12 +372,13 @@ export function useEnhancedRSVP() {
  * Provides form state and validation for RSVP submission
  */
 export function useRSVPForm() {
-  const [formData, setFormData] = useState<CreateRSVPRequest>({
+  const [formData, setFormData] = useState<RSVPFormData>({
     name: '',
     email: '',
     attendance: 'yes',
-    guestCount: 1,
-    dietaryRestrictions: '',
+    dietary: '',
+    plusOne: false,
+    plusOneName: '',
     message: '',
   });
 
@@ -377,9 +387,9 @@ export function useRSVPForm() {
   const [success, setSuccess] = useState(false);
 
   /**
-   * Update form field
+   * Update form field with proper typing
    */
-  const updateField = useCallback((field: keyof CreateRSVPRequest, value: any) => {
+  const updateField = useCallback((field: keyof RSVPFormData, value: RSVPFormData[keyof RSVPFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (error) setError(null);
@@ -394,8 +404,8 @@ export function useRSVPForm() {
     if (!formData.name.trim()) return 'Name is required';
     if (!formData.email.trim()) return 'Email is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return 'Valid email is required';
-    if (formData.guestCount < 1) return 'At least 1 guest is required';
-    if (formData.guestCount > 10) return 'Maximum 10 guests allowed';
+    if (!formData.attendance) return 'Please select your attendance status';
+    if (formData.plusOne && !formData.plusOneName?.trim()) return 'Plus one name is required when bringing a guest';
     return null;
   }, [formData]);
 
@@ -413,7 +423,7 @@ export function useRSVPForm() {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await enhancedRSVPService.create(formData);
+      const result = await enhancedRSVPService.createRSVP(formData);
       
       if (result) {
         setSuccess(true);
@@ -441,8 +451,9 @@ export function useRSVPForm() {
       name: '',
       email: '',
       attendance: 'yes',
-      guestCount: 1,
-      dietaryRestrictions: '',
+      dietary: '',
+      plusOne: false,
+      plusOneName: '',
       message: '',
     });
     setError(null);

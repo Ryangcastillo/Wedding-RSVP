@@ -1,17 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  weight: ["400", "700"],
-});
+// Using system fonts instead of Google Fonts for build environment compatibility
+const fontClasses = 'font-sans antialiased min-h-screen flex flex-col';
 
 export const metadata: Metadata = {
   title: "Loren & Billy Wedding",
@@ -25,9 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} ${playfairDisplay.variable} antialiased min-h-screen flex flex-col font-sans`}
-      >
+      <body className={fontClasses}>
         <main className="flex-grow">
           {children}
         </main>
