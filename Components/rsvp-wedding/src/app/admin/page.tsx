@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/shared/components/button';
 import { ProtectedRoute, useAuth } from '@/features/auth';
 import { RSVPList, RSVPAnalytics } from '@/features/rsvp';
@@ -21,19 +21,31 @@ import {
 } from '@/features/admin';
 import { ContentManagement } from '@/features/content';
 
+// Section configuration to avoid repeated object creation
+const SECTION_CONFIG = {
+  dashboard: 'Dashboard Overview',
+  rsvps: 'RSVP Management',
+  guests: 'Guest Management',
+  content: 'Content Management',
+  settings: 'System Settings',
+  exports: 'Data Exports',
+} as const;
+
+type SectionKey = keyof typeof SECTION_CONFIG;
+
 /**
  * Admin Dashboard Component
  */
 function AdminDashboard() {
   const { logout, user } = useAuth();
   const { rsvps } = useRSVPList();
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState<SectionKey>('dashboard');
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
-  };
+  }, [logout]);
 
-  const renderActiveSection = () => {
+  const renderActiveSection = useMemo(() => {
     switch (activeSection) {
       case 'dashboard':
         return <AdminDashboardOverview rsvps={rsvps} />;
@@ -55,26 +67,15 @@ function AdminDashboard() {
       default:
         return <AdminDashboardOverview rsvps={rsvps} />;
     }
-  };
+  }, [activeSection, rsvps]);
 
-  const getSectionTitle = () => {
-    switch (activeSection) {
-      case 'dashboard':
-        return 'Dashboard Overview';
-      case 'rsvps':
-        return 'RSVP Management';
-      case 'guests':
-        return 'Guest Management';
-      case 'content':
-        return 'Content Management';
-      case 'settings':
-        return 'System Settings';
-      case 'exports':
-        return 'Data Exports';
-      default:
-        return 'Dashboard';
+  const sectionTitle = SECTION_CONFIG[activeSection] || 'Dashboard';
+
+  const handleSectionChange = useCallback((section: string) => {
+    if (section in SECTION_CONFIG) {
+      setActiveSection(section as SectionKey);
     }
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,7 +102,7 @@ function AdminDashboard() {
           <div className="w-64 bg-white border-r min-h-screen p-4">
             <AdminNav 
               activeSection={activeSection}
-              onSectionChange={setActiveSection}
+              onSectionChange={handleSectionChange}
             />
           </div>
 
@@ -109,12 +110,12 @@ function AdminDashboard() {
           <div className="flex-1 p-6">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {getSectionTitle()}
+                {sectionTitle}
               </h2>
               <div className="h-1 w-20 bg-primary rounded"></div>
             </div>
 
-            {renderActiveSection()}
+            {renderActiveSection}
           </div>
         </div>
 
