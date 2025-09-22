@@ -1,11 +1,11 @@
 import * as React from "react";
 import { Card, CardContent } from "./card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselNext, 
+  CarouselPrevious 
 } from "./carousel";
 
 const images = [

@@ -20,6 +20,20 @@ export const changePasswordSchema = z.object({
 export type LoginData = z.infer<typeof loginSchema>;
 export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 
+// For wedding project, we'll use simple password-only admin login
+export const adminLoginSchema = z.object({
+  password: z.string().min(1, 'Password is required'),
+});
+
+export type AdminLoginData = z.infer<typeof adminLoginSchema>;
+
+export interface AuthResponse {
+  success: boolean;
+  token?: string;
+  message?: string;
+  user?: User;
+}
+
 export interface User {
   id: string;
   email: string;

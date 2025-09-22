@@ -1,109 +1,76 @@
+/**
+ * Admin Dashboard Page
+ * Protected admin interface for managing wedding RSVPs
+ * 
+ * Reference: CONST-P5 (Security First), CONST-P12 (Admin Interface)
+ */
+
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/button';
-import { Input } from '@/shared/components/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/card';
+import { ProtectedRoute, useAuth } from '@/features/auth';
+import { RSVPList, RSVPAnalytics } from '@/features/rsvp';
+import { useRSVPList } from '@/features/rsvp/hooks/use-rsvp';
 
-interface RSVP {
-  id: string;
-  name: string;
-  email: string;
-  attendance: string;
-  dietary: string;
-  submittedAt: string;
-}
+/**
+ * Admin Dashboard Component
+ */
+function AdminDashboard() {
+  const { logout, user } = useAuth();
+  const { rsvps } = useRSVPList();
 
-export default function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [rsvps, setRsvps] = useState<RSVP[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === 'wedding2024') { // Simple password, change as needed
-      setIsAuthenticated(true);
-      localStorage.setItem('adminAuth', 'true');
-    } else {
-      alert('Incorrect password');
-    }
+  const handleLogout = async () => {
+    await logout();
   };
-
-  const fetchRsvps = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/rsvp');
-      if (response.ok) {
-        const data = await response.json();
-        setRsvps(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch RSVPs', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (localStorage.getItem('adminAuth') === 'true') {
-      setIsAuthenticated(true);
-      fetchRsvps();
-    }
-  }, []);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Admin Login</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <Input
-                type="password"
-                placeholder="Enter admin password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <Button type="submit" className="w-full">Login</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="font-serif text-4xl font-bold text-center mb-8">Admin Dashboard</h1>
-        <div className="mb-8 text-center">
-          <Button onClick={fetchRsvps} disabled={loading}>
-            {loading ? 'Loading...' : 'Refresh RSVPs'}
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="font-serif text-4xl font-bold text-primary mb-2">
+              Wedding Admin Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Welcome back, {user?.email || 'Admin'}! Manage your wedding RSVPs here.
+            </p>
+          </div>
+          <Button onClick={handleLogout} variant="outline">
+            Sign Out
           </Button>
         </div>
-        <div className="grid gap-4">
-          {rsvps.map((rsvp) => (
-            <Card key={rsvp.id}>
-              <CardHeader>
-                <CardTitle>{rsvp.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p><strong>Email:</strong> {rsvp.email}</p>
-                <p><strong>Attendance:</strong> {rsvp.attendance}</p>
-                <p><strong>Dietary:</strong> {rsvp.dietary || 'None'}</p>
-                <p><strong>Submitted:</strong> {new Date(rsvp.submittedAt).toLocaleString()}</p>
-              </CardContent>
-            </Card>
-          ))}
+
+        {/* Analytics Dashboard */}
+        <RSVPAnalytics rsvps={rsvps} className="mb-8" />
+
+        {/* RSVP Management */}
+        <RSVPList />
+
+        {/* Footer */}
+        <div className="text-center text-sm text-muted-foreground mt-12 py-8 border-t">
+          <p>
+            Wedding Admin Dashboard • Secure RSVP Management
+          </p>
+          <p className="mt-2">
+            Need help? Contact{' '}
+            <a href="mailto:support@wedding.com" className="text-primary hover:underline">
+              support@wedding.com
+            </a>
+          </p>
         </div>
-        {rsvps.length === 0 && !loading && (
-          <p className="text-center text-muted-foreground">No RSVPs yet.</p>
-        )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Main Admin Page with Authentication Protection
+ */
+export default function Admin() {
+  return (
+    <ProtectedRoute>
+      <AdminDashboard />
+    </ProtectedRoute>
   );
 }
