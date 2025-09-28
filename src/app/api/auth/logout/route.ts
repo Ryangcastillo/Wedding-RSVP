@@ -1,41 +1,27 @@
 /**
- * Authentication API Route - Logout
- * Handles user logout (primarily for logging purposes)
+ * Authentication API Route - Logout (Static Export Compatible)
+ * Handles user logout (client-side only for static deployment)
  * 
  * Reference: CONST-P5 (Security First)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
+// For static exports, we need to export these routes as static
+export const dynamic = 'force-static';
+export const revalidate = false;
+
 /**
- * Logout endpoint
+ * Logout endpoint - Static version for GitHub Pages
+ * Note: In static deployment, actual logout logic should be handled client-side
  */
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    
-    // Log logout attempt (even if no token provided)
-    console.log(`Logout attempt at ${new Date().toISOString()}`);
-    
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      
-      try {
-        const decoded = Buffer.from(token, 'base64').toString('utf-8');
-        const [user] = decoded.split(':');
-        
-        if (user === 'admin') {
-          console.log(`Admin logout successful at ${new Date().toISOString()}`);
-        }
-      } catch {
-        // Invalid token format, but still process logout
-        console.log('Logout with invalid token format');
-      }
-    }
-
+    // For static exports, we can only return success
+    // Actual logout logic should be handled on the client side
     return NextResponse.json({ 
       success: true, 
-      message: 'Logout successful' 
+      message: 'Logout successful (client-side handling required)' 
     });
 
   } catch (error) {

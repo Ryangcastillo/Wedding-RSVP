@@ -1,14 +1,18 @@
 /**
- * Authentication API Route - Token Validation
- * Validates authentication tokens
+ * Authentication API Route - Token Validation (Static Export Compatible)
+ * Validates authentication tokens for static deployment
  * 
  * Reference: CONST-P5 (Security First)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force static export for GitHub Pages compatibility
+export const dynamic = 'force-static';
+export const revalidate = false;
+
 /**
- * Validate authentication token
+ * Validate authentication token - Static version
  */
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     
-    // Simple token validation (in production, use proper JWT validation)
+    // Simple token validation for static deployment
     try {
       const decoded = Buffer.from(token, 'base64').toString('utf-8');
       const [user, timestamp] = decoded.split(':');

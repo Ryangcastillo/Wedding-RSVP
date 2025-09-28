@@ -1,125 +1,79 @@
 /**
- * Authentication API Route - Login
- * Handles admin login with secure password verification
+ * Authentication API Route - Login (Static Export Compatible)
+ * Handles admin login for static deployment
  * 
  * Reference: CONST-P5 (Security First), CONST-P8 (API First & Service Layer)
  */
 
-import { NextRequest } from 'next/server';
-import { adminLoginSchema, AuthResponse } from '@/shared/types/auth';
-import { createSecureResponse, checkRateLimit, sanitizeString } from '@/lib/security';
+import { NextRequest, NextResponse } from 'next/server';
 
-// Environment variables with proper security
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-if (!ADMIN_PASSWORD) {
-  console.error('ADMIN_PASSWORD environment variable is required');
-  // In production, this would throw an error
-  // For development, we'll use a warning but continue
-}
+// Force static export for GitHub Pages compatibility
+export const dynamic = 'force-static';
+export const revalidate = false;
 
-// JWT_SECRET reserved for future JWT implementation
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  console.warn('JWT_SECRET environment variable not set - using development fallback');
+// For static deployment, authentication should be handled client-side
+// Consider using services like Auth0, Firebase Auth, or Supabase Auth
+
+interface AuthResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  user?: {
+    id: string;
+    email: string;
+    role: string;
+    createdAt: Date;
+    lastLogin: Date;
+  };
 }
 
 /**
- * Admin login endpoint
+ * Admin login endpoint - Static version
+ * Note: In production static deployment, use proper auth service
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get client IP for rate limiting
-    const clientIP = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     request.headers.get('cf-connecting-ip') || // Cloudflare
-                     'unknown';
-
-    // Rate limiting check
-    const rateLimit = checkRateLimit(`login:${clientIP}`, 5, 15 * 60 * 1000); // 5 attempts per 15 minutes
-    if (!rateLimit.allowed) {
-      return createSecureResponse<AuthResponse>(
-        { 
-          success: false, 
-          message: 'Too many login attempts. Please try again later.' 
-        }, 
-        429
-      );
-    }
-
     const body = await request.json();
-    
-    // Validate request body using Zod schema
-    const validation = adminLoginSchema.safeParse(body);
-    if (!validation.success) {
-      return createSecureResponse<AuthResponse>(
-        { 
-          success: false, 
-          message: 'Invalid credentials format' 
-        }, 
-        400
-      );
+    const { password } = body;
+
+    // Basic validation
+    if (!password) {
+      return NextResponse.json<AuthResponse>({ 
+        success: false, 
+        message: 'Password is required' 
+      }, { status: 400 });
     }
 
-    const { password } = validation.data;
+    // For static deployment demo purposes only
+    // In production, integrate with proper auth service
+    if (password === 'wedding123') {
+      const token = Buffer.from(`admin:${Date.now()}`).toString('base64');
 
-    // Sanitize input
-    const sanitizedPassword = sanitizeString(password);
-
-    // Verify admin password
-    if (!ADMIN_PASSWORD) {
-      // In development mode, we'll allow a fallback for testing
-      if (process.env.NODE_ENV === 'development' && sanitizedPassword === 'wedding123') {
-        console.warn('Using development fallback password - NOT for production!');
-      } else {
-        return createSecureResponse<AuthResponse>(
-          { 
-            success: false, 
-            message: 'Authentication service not configured' 
-          }, 
-          500
-        );
-      }
-    } else if (sanitizedPassword !== ADMIN_PASSWORD) {
-      // Add a small delay to prevent brute force attacks
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return createSecureResponse<AuthResponse>(
-        { 
-          success: false, 
-          message: 'Invalid credentials' 
-        }, 
-        401
-      );
+      return NextResponse.json<AuthResponse>({
+        success: true,
+        token,
+        message: 'Login successful (demo mode)',
+        user: {
+          id: 'admin',
+          email: 'admin@wedding.com',
+          role: 'admin',
+          createdAt: new Date(),
+          lastLogin: new Date(),
+        },
+      });
     }
 
-    // Generate simple token (in production, use JWT)
-    const token = Buffer.from(`admin:${Date.now()}`).toString('base64');
-
-    // Log successful login
-    console.log(`Admin login successful at ${new Date().toISOString()} from IP: ${clientIP}`);
-
-    return createSecureResponse<AuthResponse>({
-      success: true,
-      token,
-      message: 'Login successful',
-      user: {
-        id: 'admin',
-        email: 'admin@wedding.com',
-        role: 'admin',
-        createdAt: new Date(),
-        lastLogin: new Date(),
-      },
-    });
+    return NextResponse.json<AuthResponse>({ 
+      success: false, 
+      message: 'Invalid credentials' 
+    }, { status: 401 });
 
   } catch (error) {
     console.error('Login error:', error);
-    return createSecureResponse<AuthResponse>(
-      { 
-        success: false, 
-        message: 'Server error during authentication' 
-      }, 
-      500
-    );
+    return NextResponse.json<AuthResponse>({ 
+      success: false, 
+      message: 'Server error during authentication' 
+    }, { status: 500 });
   }
 }
 
@@ -127,8 +81,5 @@ export async function POST(request: NextRequest) {
  * Method not allowed for non-POST requests
  */
 export async function GET() {
-  return createSecureResponse(
-    { message: 'Method not allowed' }, 
-    405
-  );
+  return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
 }
