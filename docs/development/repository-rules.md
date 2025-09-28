@@ -322,7 +322,7 @@ Add any other context or screenshots about the feature request.
 
 ### Project Documentation
 - Keep README.md current with setup and deployment instructions
-- Update specification.md with new feature requirements
+- Update [`specification.md`](../architecture/specification.md) with new feature requirements
 - Maintain architectural decision records (ADRs)
 - Document configuration changes and environment variables
 
