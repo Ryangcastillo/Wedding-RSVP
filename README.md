@@ -146,17 +146,28 @@ Following constitutional principles (CONST-P1 through CONST-P15):
 
 ## 📚 Documentation
 
-### Architecture Documents
-- `constitution.md` - Governing principles and standards
-- `specification.md` - Feature requirements and acceptance criteria
-- `plan.md` - Technical implementation roadmap
-- `tasks.md` - Detailed task breakdown
-- `css-styling-guidelines.md` - Design system documentation
-- `repository-rules.md` - Development workflow standards
-- `agent-guidelines.md` - AI collaboration framework
+> **📁 Organized Documentation**: All project documentation is now organized in the [`docs/`](./docs/) directory for better discoverability.
 
-### Refactoring & Security
-- `refactor_log.md` - Complete log of all refactoring changes and fixes
+### Architecture & Design
+- [`docs/architecture/`](./docs/architecture/) - System architecture and design decisions
+  - [`constitution.md`](./docs/architecture/constitution.md) - Governing principles and development standards  
+  - [`specification.md`](./docs/architecture/specification.md) - Feature requirements and acceptance criteria
+  - [`plan.md`](./docs/architecture/plan.md) - Technical implementation roadmap
+  - [`components-list.md`](./docs/architecture/components-list.md) - Component inventory
+
+### Development Guides  
+- [`docs/development/`](./docs/development/) - Development workflows and team standards
+  - [`repository-rules.md`](./docs/development/repository-rules.md) - Git workflow and development standards
+  - [`css-styling-guidelines.md`](./docs/development/css-styling-guidelines.md) - Design system documentation
+  - [`agent-guidelines.md`](./docs/development/agent-guidelines.md) - AI collaboration framework
+  - [`tasks.md`](./docs/development/tasks.md) - Detailed task breakdown and planning
+
+### Project History
+- [`docs/logs/`](./docs/logs/) - Historical records and migration documentation
+  - [`refactor_log.md`](./docs/logs/refactor_log.md) - Complete log of refactoring changes and fixes  
+  - [`migration_guide.md`](./docs/logs/migration_guide.md) - Step-by-step migration documentation
+
+### Security & Configuration
 - `SECURITY.md` - Security guide and implementation details
 - `.env.example` - Environment configuration template
 
@@ -166,7 +177,7 @@ Following constitutional principles (CONST-P1 through CONST-P15):
 
 ## 🤝 Contributing
 
-1. Follow the repository rules in `repository-rules.md`
+1. Follow the repository rules in [`docs/development/repository-rules.md`](./docs/development/repository-rules.md)
 2. Use conventional commits for all changes
 3. Ensure TypeScript strict compliance
 4. Apply wedding design system consistently

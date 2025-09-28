@@ -830,9 +830,9 @@ const debugHeaders = (request: Request) => {
 
 ### Support Contacts
 
-- **Technical Issues**: Check `refactor_log.md` for detailed troubleshooting
-- **Security Concerns**: Review `SECURITY.md` for security policies
-- **Performance Issues**: See `plan.md` for optimization strategies
+- **Technical Issues**: Check [`refactor_log.md`](./refactor_log.md) for detailed troubleshooting
+- **Security Concerns**: Review [`SECURITY.md`](../../SECURITY.md) for security policies
+- **Performance Issues**: See [`plan.md`](../architecture/plan.md) for optimization strategies
 
 ---
 

@@ -258,10 +258,10 @@ When completing work:
 - `replace_string_in_file` - For precise code modifications
 
 ### Key Files
-- `constitution.md` - Governing principles (CONST-P#)
-- `specification.md` - Feature requirements and acceptance criteria
-- `css-styling-guidelines.md` - Design system and styling standards
-- `plan.md` - Technical architecture and implementation roadmap
+- [`constitution.md`](../architecture/constitution.md) - Governing principles (CONST-P#)
+- [`specification.md`](../architecture/specification.md) - Feature requirements and acceptance criteria
+- [`css-styling-guidelines.md`](./css-styling-guidelines.md) - Design system and styling standards
+- [`plan.md`](../architecture/plan.md) - Technical architecture and implementation roadmap
 
 ### Wedding Design System
 - **Colors**: Primary Gold (#F59E0B), Blush (#FCA5A5), Sage (#A3A3A3)
